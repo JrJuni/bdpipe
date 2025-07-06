@@ -1,0 +1,32 @@
+프로젝트 : 영업관리용 DB 파이프라인 설계 및 구현
+
+# Overview
+- 기존 영업 관리 Excel 파일 검토 및 입출력 분석
+- 효율적이며 확장성 있는 구조로 설계
+- DB SQLite3 구현
+
+# Detail
+1. 입력 모듈 개발
+  사업개발팀의 입력 셋은 외부 고객과의 연락/미팅 등 action 중심임.
+  이유: 정리해야할 모든 데이터는 고객과의 상호작용에서 도출할 수 있음.
+  연락할 때마다 입력하거나 하루 정리하면서 입력하기만 하면 되는 것이기 때문에 사용자 입장에서 편리하기도 함.
+  대신 contact, companies 등의 데이터는 연관된 table에 입력하고 나머지 값은 null이나 기본값으로 우선 처리해야할 것 같음.
+  그렇기 때문에 table 생성 시 task 에 있는 것들이 아니면 다 필수 입력값을 받으면 안되고,
+  대신 나중에 입력이 안됐다고 알림 메세지를 띄우는 방식이 좋을 것으로 보임.
+  task의 입력은, 
+                task_id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                project_id      INTEGER,
+                company_id      INTEGER NOT NULL,
+                contact_id      INTEGER,
+                user_id         INTEGER NOT NULL,
+                action_date     DATE NOT NULL,
+                agenda          TEXT,
+                action_item     TEXT,
+                due_date        DATE,
+                task_status     TEXT, -- 예: 'To-Do', '진행 중', '완료'
+                FOREIGN KEY (project_id) REFERENCES Projects (project_id),
+                FOREIGN KEY (company_id) REFERENCES Companies (company_id),
+                FOREIGN KEY (contact_id) REFERENCES Contacts (contact_id),
+                FOREIGN KEY (user_id) REFERENCES Users (user_id)
+  이 정도면 충분할 것 같음.
+  이에 맞춰 company는 같이 생성해버려야됨
