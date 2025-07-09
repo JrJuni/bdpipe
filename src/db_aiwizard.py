@@ -91,17 +91,17 @@ def summarize_with_llm(email_content: str) -> dict:
 if __name__ == '__main__':
     # --- 1차 테스트: 연락처 추출 ---
     sample_signature = """
-    Best regards,
+    Junyeob Kim
+Business Development Team | Senior Manager
+ 
+M +82-10-4753-8125
+E junyeob@mobilint.com 
+L https://www.linkedin.com/in/juni0409/
+ 
+Mobilint, Inc.
+3F, Narakium Yeoksam B Building,
+35, Seolleung-ro 93-gil, Gangnam-gu, Seoul, Republic of Korea
 
-    Jiyeon Lee
-    Management Department Team| Manager
-
-    M. +82-10-8616-2555
-    E. jiyeon@mobilint.com
-
-    Mobilint, Inc.
-    3F, Narakium Yeoksam B Building,
-    35, Seolleung-ro 93-gil, Gangnam-gu, Seoul, Republic of Korea
     """
     
     print("="*20, "연락처 추출 테스트", "="*20)
@@ -113,26 +113,13 @@ if __name__ == '__main__':
 
     # --- 2차 테스트: 이메일 요약 ---
     sample_email_content = """
-안녕하세요. 황재준소장님.
-모빌린트 조윤석입니다.
+안녕하세요. 
+우리는 하나!
+앞으로 소풍 가려는데 참가비가 어떻게 되나요?
+그리고 참가 등록 어떻게 하나요?
+빠른 연락 부탁드립니다.
 
-첨부와 같이 관련 서류 송부하오니 확인하시어 발주 진행 요청드리며,
-광명테크 사업자등록증 및 세금계산서 발행주소 회신 부탁드립니다.
-
-또한, Mobilint NPU SDK 및 각종 리소스를 다운받기 위해서는 공식 배포처 (http://dl.mobilint.com) 계정 등록이 필요합니다.
-첨부(Mobilint Distribution Website.pdf)를 통해 등록 방법을 안내드리오니 참고하시어 공식 배포처에 계정 등록을 완료해주신 후 회신 부탁드립니다.
-아울러 문의가 있으실 경우 언제든 회신 부탁드리겠습니다.
-
-
-@Jiyeon 님.
-발주서 입수되는대로 Aries/Regulus 개발키트 및 SoM 준비 바랍니다.
-
-@Somin 님.
-발주서 입수 되는대로 계산서 발행 후 전체 공유 부탁 드립니다.
-
-
-감사합니다.
-조윤석드림.
+뽀로로 드림
 
     """
     
