@@ -6,7 +6,8 @@ def get_project_root():
         return os.path.dirname(sys.executable)
     else:
         # 이 파일이 src 폴더 안에 있으므로, 부모 폴더가 프로젝트 루트입니다.
-        return os.path.dirname(os.path.abspath(__file__))
+        # 한번 더 씌워야 최상위 폴더에 도달함.
+        return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 PROJECT_ROOT = get_project_root()
 DATA_DIR = os.path.join(PROJECT_ROOT, 'data')
