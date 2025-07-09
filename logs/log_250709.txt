@@ -25,3 +25,12 @@
   It works well!
   I used Midm 2.0 because it's specialize for Korean analysis
   Q4-K-M works well
+
+# Next Step
+- connect AI signature with Contacts Table
+- use streamlit for import/edit/review tables
+- clone it in Home computer
+> git clone <GitHub 저장소 주소> (I think I can do it with pull)
+> python -m venv .venv (In the project folder)
+> source .venv/bin/activate
+> pip install -r requirements.txt
