@@ -10,3 +10,18 @@
   Develop Read functions later, do only simple things
   Develop main first to print the result and test it
 
+2. Set Venv
+  For Devops
+  .\.venv\Scripts\activate (for MS Windows)
+  source .venv/bin/activate (for Linux)
+  pip freeze > requirements.txt (to make requirements.txt)
+
+3. Make .gitignore
+  Only upload essential codes
+  Do not share internal data
+
+4. Use llama-cpp-python
+  Make AI functions to get contact info
+  It works well!
+  I used Midm 2.0 because it's specialize for Korean analysis
+  Q4-K-M works well
