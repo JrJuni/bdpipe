@@ -1,0 +1,17 @@
+# .gitignore
+
+# Virtual Environment
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# IDE/Editor specific
+.idea/
+.vscode/
+
+# Exported files
+exports/
