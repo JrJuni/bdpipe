@@ -24,7 +24,8 @@ def _get_llm_json_response(prompt: str) -> dict:
         prompt,
         max_tokens=512,  # 더 긴 JSON 출력을 위해 토큰 수 증가
         stop=["```"],    # JSON 코드 블록이 끝나면 생성을 멈추도록 설정
-        temperature=0.1, # 일관된 JSON 생성을 위해 온도를 낮춤
+        # n=3,           # 다른 답변 후보 생성 
+        temperature=0.1, # 일관된 JSON 생성을 위해 온도를 낮춤, 다수 답변 생성 시 온도를 0.5~0.8 정도로 설정
         echo=False
     )
     
@@ -120,7 +121,6 @@ Mobilint, Inc.
 빠른 연락 부탁드립니다.
 
 뽀로로 드림
-
     """
     
     print("="*20, "이메일 요약 테스트", "="*20)
