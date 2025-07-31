@@ -1,0 +1,5 @@
+프로젝트 : 영업관리용 DB 파이프라인 설계 및 구현
+
+# Overview
+- Workflow 정리 완료
+- db_schema.py 업데이트

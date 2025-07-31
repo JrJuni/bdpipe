@@ -19,3 +19,6 @@ exports/
 # models
 models/
 
+# data
+data/
+
