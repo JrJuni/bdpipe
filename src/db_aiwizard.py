@@ -20,6 +20,7 @@ def _get_llm_json_response(prompt: str) -> dict:
         print("오류: LLM 모델이 로드되지 않았습니다.")
         return {}
 
+
     output = llm(
         prompt,
         max_tokens=512,  # 더 긴 JSON 출력을 위해 토큰 수 증가

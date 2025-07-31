@@ -16,6 +16,6 @@ DB_FILENAME = 'mobilint_crm.db'
 DB_PATH = os.path.join(PROJECT_ROOT, 'data', DB_FILENAME)
 
 # --- 모델 파일 이름 설정 (Single Source of Truth) ---
-# MODEL_FILENAME = "Midm-2.0-Mini-Instruct-Q4_K_M.gguf"
-MODEL_FILENAME = "Midm-2.0-Mini-Instruct-Q8_0.gguf"
+# MODEL_FILENAME = "Midm-2.0-Mini-Instruct-Q8_0.gguf"
+MODEL_FILENAME = "Midm-2.0-Mini-Instruct-Q4_K_M.gguf"
 MODEL_PATH = os.path.join(PROJECT_ROOT, 'models', MODEL_FILENAME)
