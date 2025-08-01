@@ -1,0 +1,13 @@
+프로젝트 : 영업관리용 DB 파이프라인 설계 및 구현
+
+# Overview
+- MVP 구현을 위한 Streamlit 적용
+
+# 유지/보수 편한 코드 구현
+- MVP 단계: 파일 하나로 빠르게 몰아넣고
+- 1–2명 이상 또는 기능 확장 시: operations/ 디렉토리 만들어 Entity별 CRUD 모듈로 분리
+- 필요하면 제너릭 헬퍼(generic_insert, generic_update)로 중복도 최소화
+
+# 태그 변경
+- src 폴더 내 코드 기능에 따라 ai, db, st 태그 추가
+
