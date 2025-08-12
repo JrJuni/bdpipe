@@ -1,5 +1,3 @@
-# main.py (수정)
-
 import db_operations as ops
 import db_queries as queries
 import db_export as excel_exporter # <- 엑셀 내보내기 모듈 import
@@ -45,11 +43,6 @@ def main_menu():
             )
             if new_task_id:
                 print(f"\n성공: 새로운 Task(ID: {new_task_id})가 추가되었습니다.")
-
-        elif choice == '4': # <- 회의록 자동 정리 도구
-            print("\n--- 회의록 자동 정리 도구 ---")
-            from meeting_minutes_organizer import interactive_meeting_organizer
-            interactive_meeting_organizer()
 
         elif choice == '9': # <- 엑셀 내보내기 로직
             print("\n--- 회사 목록 엑셀 내보내기 ---")
