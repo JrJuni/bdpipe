@@ -31,7 +31,14 @@ The application requires GGUF model files for AI functionality:
 1. Download GGUF models (currently using Midm-2.0-Mini-Instruct variants)
 2. Place in `models/` directory
 3. Update `MODEL_FILENAME` in `src/config.py` if needed
-4. Available models: Q4_K_M, Q5_K_M, Q8_0 (Q8_0 is default for better quality)
+4. Available models: Q4_K_M, Q5_K_M, Q8_0 (Q4_K_M is currently default)
+
+### Streamlit Integration
+The application includes Streamlit support for web-based interface development:
+```bash
+# Run Streamlit applications (if available)
+streamlit run <streamlit_app.py>
+```
 
 ## Architecture
 
@@ -82,6 +89,7 @@ LLM integration uses structured prompts with JSON response extraction:
 - `src/db_export.py`: Excel export with pandas/openpyxl integration
 - `src/db_aiwizard.py`: LLM wrapper for email/text analysis
 - `src/crm_wizard.py`: AI-powered CRM assistance features
+- `src/db_greetingai.py`: AI greeting and interaction handling
 
 ## Development Notes
 
@@ -104,3 +112,12 @@ LLM integration uses structured prompts with JSON response extraction:
 - Generated exports in `exports/` directory  
 - Log files in `logs/` directory with date-based naming
 - GGUF model files in `models/` directory
+- Output files in `output/` directory
+
+### Key Dependencies
+Core packages from requirements.txt:
+- `llama_cpp_python==0.3.12`: LLM integration via llama.cpp
+- `pandas==2.3.1` & `openpyxl==3.1.5`: Excel export functionality
+- `streamlit==1.47.0`: Web interface framework
+- `numpy==2.3.1`: Numerical operations
+- Standard Python libraries for database, file operations
