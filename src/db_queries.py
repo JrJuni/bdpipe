@@ -74,7 +74,7 @@ def get_tasks_by_company_name(company_name: str) -> list:
 
 def get_all_companies_summary() -> list:
     """
-    모든 회사의 목록과 각 회사에 연결된 담당자 수, Task 수를 함께 조회합니다.
+    모든 회사의 목록과 각 회사에 연결된 매출, 진행중인 Task 수, 프로젝트 수를 함께 조회합니다.
     
     Returns:
         list: 각 회사 정보를 담은 사전(dict)의 리스트.
@@ -84,14 +84,21 @@ def get_all_companies_summary() -> list:
     c = conn.cursor()
     
     try:
-        # 서브쿼리와 GROUP BY를 사용하여 각 회사별 통계를 계산합니다.
+        # 서브쿼리를 사용하여 각 회사별 통계를 계산합니다.
         sql = """
             SELECT
                 C.company_id,
                 C.company_name,
                 C.website,
-                (SELECT COUNT(contact_id) FROM Contacts WHERE company_id = C.company_id) AS contact_count,
-                (SELECT COUNT(task_id) FROM Tasks WHERE company_id = C.company_id) AS task_count
+                COALESCE((SELECT SUM(I.total_amount) 
+                         FROM Invoices I 
+                         WHERE I.company_id = C.company_id AND I.status = 2), 0) AS total_revenue,
+                (SELECT COUNT(task_id) 
+                 FROM Tasks 
+                 WHERE company_id = C.company_id AND task_status = 0) AS active_tasks_count,
+                (SELECT COUNT(project_id) 
+                 FROM Projects 
+                 WHERE company_id = C.company_id AND status = 'active') AS active_projects_count
             FROM
                 Companies C
             ORDER BY
@@ -106,6 +113,369 @@ def get_all_companies_summary() -> list:
 # --------------------------------------------------------------------
 # 기본적인 전체 테이블 조회 함수 (디버깅 및 기본 UI 구성용)
 # --------------------------------------------------------------------
+
+def get_contacts_by_company_name(company_name: str) -> list:
+    """
+    특정 회사의 모든 담당자 목록을 조회합니다.
+    
+    Args:
+        company_name (str): 조회할 회사의 이름.
+        
+    Returns:
+        list: 담당자 정보를 담은 사전(dict)의 리스트.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = _dict_factory
+    c = conn.cursor()
+    
+    try:
+        sql = """
+            SELECT 
+                C.contact_id,
+                C.contact_name,
+                C.position,
+                C.email,
+                C.phone,
+                CO.company_name
+            FROM 
+                Contacts C
+            JOIN 
+                Companies CO ON C.company_id = CO.company_id
+            WHERE 
+                CO.company_name = ?
+            ORDER BY 
+                C.contact_name ASC
+        """
+        c.execute(sql, (company_name,))
+        return c.fetchall()
+    finally:
+        conn.close()
+
+def get_projects_by_company_name(company_name: str) -> list:
+    """
+    특정 회사의 모든 프로젝트 목록을 조회합니다.
+    
+    Args:
+        company_name (str): 조회할 회사의 이름.
+        
+    Returns:
+        list: 프로젝트 정보를 담은 사전(dict)의 리스트.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = _dict_factory
+    c = conn.cursor()
+    
+    try:
+        sql = """
+            SELECT 
+                P.project_id,
+                P.project_name,
+                P.start_date,
+                P.end_date,
+                P.project_status,
+                P.budget,
+                CO.company_name
+            FROM 
+                Projects P
+            JOIN 
+                Companies CO ON P.company_id = CO.company_id
+            WHERE 
+                CO.company_name = ?
+            ORDER BY 
+                P.start_date DESC
+        """
+        c.execute(sql, (company_name,))
+        return c.fetchall()
+    finally:
+        conn.close()
+
+def get_project_details_with_participants(project_id: int) -> dict:
+    """
+    특정 프로젝트의 상세 정보와 참여자 목록을 조회합니다.
+    
+    Args:
+        project_id (int): 조회할 프로젝트의 ID.
+        
+    Returns:
+        dict: 프로젝트 정보와 참여자 목록을 포함한 사전.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = _dict_factory
+    c = conn.cursor()
+    
+    try:
+        # 프로젝트 기본 정보 조회
+        project_sql = """
+            SELECT 
+                P.*,
+                CO.company_name
+            FROM 
+                Projects P
+            JOIN 
+                Companies CO ON P.company_id = CO.company_id
+            WHERE 
+                P.project_id = ?
+        """
+        c.execute(project_sql, (project_id,))
+        project_info = c.fetchone()
+        
+        if not project_info:
+            return {}
+        
+        # 프로젝트 참여자 조회
+        participants_sql = """
+            SELECT 
+                PP.participant_id,
+                PP.role,
+                U.username,
+                U.email
+            FROM 
+                Project_Participants PP
+            JOIN 
+                Users U ON PP.user_id = U.user_id
+            WHERE 
+                PP.project_id = ?
+            ORDER BY 
+                PP.role ASC
+        """
+        c.execute(participants_sql, (project_id,))
+        participants = c.fetchall()
+        
+        return {
+            'project_info': project_info,
+            'participants': participants
+        }
+    finally:
+        conn.close()
+
+def get_invoice_details_with_items(invoice_id: int) -> dict:
+    """
+    특정 인보이스의 상세 정보와 항목 목록을 조회합니다.
+    
+    Args:
+        invoice_id (int): 조회할 인보이스의 ID.
+        
+    Returns:
+        dict: 인보이스 정보와 항목 목록을 포함한 사전.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = _dict_factory
+    c = conn.cursor()
+    
+    try:
+        # 인보이스 기본 정보 조회
+        invoice_sql = """
+            SELECT 
+                I.*,
+                CO.company_name
+            FROM 
+                Invoices I
+            JOIN 
+                Companies CO ON I.company_id = CO.company_id
+            WHERE 
+                I.invoice_id = ?
+        """
+        c.execute(invoice_sql, (invoice_id,))
+        invoice_info = c.fetchone()
+        
+        if not invoice_info:
+            return {}
+        
+        # 인보이스 항목 조회
+        items_sql = """
+            SELECT 
+                II.*,
+                P.product_name
+            FROM 
+                Invoice_Items II
+            LEFT JOIN 
+                Products P ON II.product_id = P.product_id
+            WHERE 
+                II.invoice_id = ?
+            ORDER BY 
+                II.item_id ASC
+        """
+        c.execute(items_sql, (invoice_id,))
+        items = c.fetchall()
+        
+        return {
+            'invoice_info': invoice_info,
+            'items': items
+        }
+    finally:
+        conn.close()
+
+def get_tasks_by_date_range(start_date: str, end_date: str) -> list:
+    """
+    특정 기간의 Task 목록을 조회합니다.
+    
+    Args:
+        start_date (str): 시작일 (YYYY-MM-DD 형식).
+        end_date (str): 종료일 (YYYY-MM-DD 형식).
+        
+    Returns:
+        list: Task 정보를 담은 사전(dict)의 리스트.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = _dict_factory
+    c = conn.cursor()
+    
+    try:
+        sql = """
+            SELECT
+                T.task_id,
+                T.action_date,
+                T.agenda,
+                T.action_item,
+                T.due_date,
+                T.task_status,
+                U.username AS user_name,
+                CO.company_name,
+                C.contact_name
+            FROM 
+                Tasks T
+            JOIN 
+                Users U ON T.user_id = U.user_id
+            JOIN 
+                Companies CO ON T.company_id = CO.company_id
+            LEFT JOIN 
+                Contacts C ON T.contact_id = C.contact_id
+            WHERE 
+                T.action_date BETWEEN ? AND ?
+            ORDER BY 
+                T.action_date DESC
+        """
+        c.execute(sql, (start_date, end_date))
+        return c.fetchall()
+    finally:
+        conn.close()
+
+def get_tasks_by_user(user_id: int) -> list:
+    """
+    특정 사용자의 모든 Task 목록을 조회합니다.
+    
+    Args:
+        user_id (int): 조회할 사용자의 ID.
+        
+    Returns:
+        list: Task 정보를 담은 사전(dict)의 리스트.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = _dict_factory
+    c = conn.cursor()
+    
+    try:
+        sql = """
+            SELECT
+                T.task_id,
+                T.action_date,
+                T.agenda,
+                T.action_item,
+                T.due_date,
+                T.task_status,
+                U.username AS user_name,
+                CO.company_name,
+                C.contact_name
+            FROM 
+                Tasks T
+            JOIN 
+                Users U ON T.user_id = U.user_id
+            JOIN 
+                Companies CO ON T.company_id = CO.company_id
+            LEFT JOIN 
+                Contacts C ON T.contact_id = C.contact_id
+            WHERE 
+                T.user_id = ?
+            ORDER BY 
+                T.action_date DESC
+        """
+        c.execute(sql, (user_id,))
+        return c.fetchall()
+    finally:
+        conn.close()
+
+def get_incomplete_tasks() -> list:
+    """
+    미완료 상태의 모든 Task 목록을 조회합니다.
+    
+    Returns:
+        list: 미완료 Task 정보를 담은 사전(dict)의 리스트.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = _dict_factory
+    c = conn.cursor()
+    
+    try:
+        sql = """
+            SELECT
+                T.task_id,
+                T.action_date,
+                T.agenda,
+                T.action_item,
+                T.due_date,
+                T.task_status,
+                T.task_type,
+                T.priority,
+                U.username AS user_name,
+                CO.company_name,
+                C.contact_name
+            FROM 
+                Tasks T
+            JOIN 
+                Users U ON T.user_id = U.user_id
+            JOIN 
+                Companies CO ON T.company_id = CO.company_id
+            LEFT JOIN 
+                Contacts C ON T.contact_id = C.contact_id
+            WHERE 
+                T.task_status = 0
+            ORDER BY 
+                T.due_date ASC, T.action_date DESC
+        """
+        c.execute(sql)
+        return c.fetchall()
+    finally:
+        conn.close()
+
+def search_contacts(search_term: str) -> list:
+    """
+    담당자 이름, 이메일, 전화번호로 검색합니다.
+    
+    Args:
+        search_term (str): 검색어.
+        
+    Returns:
+        list: 검색된 담당자 정보를 담은 사전(dict)의 리스트.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = _dict_factory
+    c = conn.cursor()
+    
+    try:
+        sql = """
+            SELECT 
+                C.contact_id,
+                C.contact_name,
+                C.position,
+                C.email,
+                C.phone,
+                CO.company_name
+            FROM 
+                Contacts C
+            JOIN 
+                Companies CO ON C.company_id = CO.company_id
+            WHERE 
+                C.contact_name LIKE ? OR
+                C.email LIKE ? OR
+                C.phone LIKE ?
+            ORDER BY 
+                C.contact_name ASC
+        """
+        search_pattern = f"%{search_term}%"
+        c.execute(sql, (search_pattern, search_pattern, search_pattern))
+        return c.fetchall()
+    finally:
+        conn.close()
 
 def get_all_from_table(table_name: str) -> list:
     """
@@ -156,7 +526,7 @@ if __name__ == '__main__':
     companies = get_all_companies_summary()
     if companies:
         for company in companies:
-            print(f"- {company['company_name']} (담당자 수: {company['contact_count']}, 활동 수: {company['task_count']})")
+            print(f"- {company['company_name']} (매출: {company['total_revenue']}, 진행중 Task: {company['active_tasks_count']}, 활성 프로젝트: {company['active_projects_count']})")
 
     print("\n" + "="*50)
     print("=== 'Contacts' 테이블 전체 조회 (기본 기능) ===")
