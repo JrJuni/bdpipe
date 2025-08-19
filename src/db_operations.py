@@ -52,12 +52,12 @@ def get_or_create_project(cursor, company_id: int, project_name: str) -> int | N
 # --------------------------------------------------------------------
 # Master Data CRUD
 # --------------------------------------------------------------------
-def add_user(username: str, password_hash: str, user_email: str = None) -> int:
+def add_user(username: str, password_hash: str, user_email: str = None, auth_level: int = 0) -> int:
     conn = sqlite3.connect(DB_PATH); c = conn.cursor()
     try:
         c.execute(
-            "INSERT INTO Users (username, password_hash, user_email) VALUES (?, ?, ?)",
-            (username, password_hash, user_email)
+            "INSERT INTO Users (username, password_hash, user_email, auth_level) VALUES (?, ?, ?, ?)",
+            (username, password_hash, user_email, auth_level)
         )
         conn.commit()
         return c.lastrowid

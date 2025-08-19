@@ -20,6 +20,7 @@ def initialize_database():
                 username TEXT NOT NULL UNIQUE,
                 password_hash TEXT NOT NULL,
                 user_email TEXT UNIQUE,
+                auth_level INTEGER DEFAULT 0 CHECK (auth_level BETWEEN 0 AND 5),
                 created_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 is_deleted     BOOLEAN DEFAULT 0
