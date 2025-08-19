@@ -8,7 +8,7 @@
 - feat/queries 브랜치 기능과 성공적 통합
 
 # 주요 변경사항
-
+## 0. 실행: streamlit run src/streamlit_app.py  # echo "" | streamlit run src/streamlit_app.py
 ## 1. 사용자 인증 시스템 구현
 ### user_auth.py 핵심 모듈 개발
 **보안 기능**
@@ -183,7 +183,7 @@
 - **배포 준비**: 즉시 운영 환경 사용 가능
 - **커밋 상태**: "login function 001" 커밋 완료
 
-# 내일 계획 (2025-08-20)
+# 앞으로 할 일
 
 ## 1. 입력 구조 개선
 ### Task 추가 폼 최적화
